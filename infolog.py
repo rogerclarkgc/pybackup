@@ -20,7 +20,7 @@ console.setFormatter(formatter_con)
 logger_con.addHandler(console)
 
 # backup file logger
-logger_file = logging.getLogger('pybackup')
+logger_file = logging.getLogger('pybackup_file')
 logger_file.setLevel(logging.DEBUG)
 
 logFilepath = os.path.join(os.path.abspath('..'), 'pybackupFileLog.log')
@@ -51,10 +51,13 @@ def streamcol(s, col):
         out = blue + s + end
     return out
 
-def WriteLogFile(filelist=None, chgfile=None, delfile=None, fullbackup=True):
+def WriteLogFile(logname=None, filelist=None, chgfile=None, delfile=None, fullbackup=True):
     if fullbackup:
         # type == 0, using fullBackup() method
-        logname = time.strftime('%Y-%m-%d-%H%M%S', time.localtime()) + '_FULL.log'
+        if not logname:
+            logname = time.strftime('%Y-%m-%d-%H%M%S', time.localtime()) + '_FULL.log'
+        else:
+            logname = logname+time.strftime('%Y-%m-%d-%H%M%S', time.localtime())+ '_FULL.log'
         logpath = os.path.join(os.path.abspath('..'), logname)
         logger_con.info((streamcol('writing log file in path:{}'.format(logpath), 'blue')))
         logContent = ["file:{}    path:{}\n".format(key[0], key[1]) for key in filelist.keys()]
@@ -63,12 +66,15 @@ def WriteLogFile(filelist=None, chgfile=None, delfile=None, fullbackup=True):
         with open(logpath, 'a', encoding='utf-8') as f:
             f.writelines(logContent)
     else:
-        logname = time.strftime('%Y-%m-%d-%H%M%S', time.localtime()) + '_INCR.log'
+        if not logname:
+            logname = time.strftime('%Y-%m-%d-%H%M%S', time.localtime()) + '_INCR.log'
+        else:
+            logname = logname + time.strftime('%Y-%m-%d-%H%M%S', time.localtime()) + '_INCR.log'
         logpath = os.path.join(os.path.abspath('..'), logname)
         logger_con.info((streamcol('writing log file in path:{}'.format(logpath), 'blue')))
         chgContent = ["file:{}    path:{}\n".format(p[1], os.path.join(p[0], p[1]))
         for p in chgfile]
-        chgContent.append('These files above have been modified\n\n\n')
+        chgContent.append('These files above have been modified or added\n\n\n')
         delContent = ["file:{}    path:{}\n".format(p[1], p[0]) for p in delfile]
         delContent.append('These files above have been deleted, moved or renamed\n')
         with open(logpath, 'a', encoding='utf-8') as f:
