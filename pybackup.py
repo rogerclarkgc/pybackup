@@ -8,7 +8,7 @@ import time
 import zipfile
 import hashlib
 import pickle
-from infolog import logger_con, logger_file, streamcol
+from infolog import logger_con, WriteLogFile, streamcol
 
 
 def mkdir(path):
@@ -44,7 +44,6 @@ class md5dict:
     """
     def __init__(self, path, dictname = None):
         self.path = path
-        #self.dictfile = os.path.join(os.path.abspath('..'), 'md5dict')
         pathexists = os.path.exists(path)
         if pathexists is False:
             raise RuntimeError(streamcol('[md5dict]:source path not exits', 'red'))
@@ -205,6 +204,8 @@ def backupTask(srclist, dst, filenamelist=None, fullbackup=True):
             logger_con.info(streamcol('starting fullbackup for source path:{}'
             .format(src), 'blue'))
             filelist = fullBackup(src, dst, backupFile)
+            logger_con.info(streamcol('writing log file in path:{}'.format(os.path.abspath('..')), 'blue'))
+            WriteLogFile(logname=os.path.basename(src), filelist=filelist, fullbackup=True)
         else:
             if filenamelist:
                 backupFile = filenamelist[index]
@@ -214,3 +215,7 @@ def backupTask(srclist, dst, filenamelist=None, fullbackup=True):
             logger_con.info(streamcol('starting incrbackup for source path:{}'
             .format(src), 'blue'))
             chgfile, delfile = incrBackup(src, dst, backupFile)
+            logger_con.info(streamcol('writing log file in path:{}'.format(os.path.abspath('..')), 'blue'))
+            WriteLogFile(logname=os.path.basename(src), chgfile=chgfile, delfile=delfile, fullbackup=False)
+
+
