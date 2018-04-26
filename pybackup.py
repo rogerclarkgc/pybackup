@@ -17,10 +17,10 @@ def mkdir(path):
     """
     pathexists = os.path.exists(path)
     if pathexists:
-        logger_con.warn(streamcol('path {} has existed'.format(path), 'red'))
+        streamcol('path {} has existed'.format(path), 'red', 'warn')
     else:
         os.makedirs(path)
-        logger_con.info(streamcol('path {} has created successful'.format(path), 'green'))
+        streamcol('path {} has created successful'.format(path), 'green', 'info')
     return not pathexists
 
 def md5hash(filename):
@@ -46,7 +46,7 @@ class md5dict:
         self.path = path
         pathexists = os.path.exists(path)
         if pathexists is False:
-            raise RuntimeError(streamcol('[md5dict]:source path not exits', 'red'))
+            raise RuntimeError(streamcol('[md5dict]:source path not exits', 'red', 'error'))
         if not dictname:
             self.dictname = os.path.basename(path) + '.pickle'
         else:
@@ -62,8 +62,7 @@ class md5dict:
             with open(self.dictfile, 'rb') as f:
                 md5dict = pickle.load(f)
         except (FileExistsError, FileNotFoundError):
-            logger_con.error(streamcol('md5 file not found, check path:\n{}'
-            .format(self.dictfile), 'red'))
+            streamcol('md5 file not found, check path:\n{}'.format(self.dictfile), 'red', 'error')
             return {}
         else:
             return md5dict
@@ -74,22 +73,20 @@ class md5dict:
         key of dict is a pair (file, filepath)
         return value is the dict used to store md5 value of files
         """
-        logger_con.info(streamcol('checking path {}...'.format(self.path), 'blue'))
+        streamcol('checking path {}...'.format(self.path), 'blue', 'info')
         #flist = os.listdir(self.path)
         flist = []
         for root, dirs, files in os.walk(self.path):
             for name in files:
                 flist.append((root, name))
         newdict = {}
-        logger_con.info(streamcol('generating md5 value for {} files'
-        .format(len(flist)), 'blue'))
+        streamcol('generating md5 value for {} files'.format(len(flist)), 'blue', 'info')
         for root, f in flist:
             fdst = os.path.join(root, f)
             newdict[(f, fdst)] = (md5hash(fdst), fdst)
-            logger_con.info(streamcol('new file: {}     md5:{}'
-            .format(newdict[(f, fdst)][1], newdict[(f, fdst)][0]), 'green'))
-        logger_con.info(streamcol('writing md5dict pickle at {}'
-        .format(self.dictfile), 'blue'))
+            streamcol('new file: {}     md5:{}'.format(newdict[(f, fdst)][1], newdict[(f, fdst)][0]),
+                      'green', 'info')
+        streamcol('writing md5dict pickle at {}'.format(self.dictfile), 'blue', 'info')
         with open(self.dictfile, mode = 'wb+') as f:
             pickle.dump(newdict, f)
         return newdict
@@ -105,16 +102,15 @@ class md5dict:
             for name in files:
                 flist.append((root, name))
         changedfile = []
-        logger_con.info(streamcol('checking md5 value for {} files'
-        .format(len(flist)), 'blue'))
+        streamcol('checking md5 value for {} files'.format(len(flist)), 'blue', 'info')
         with open(self.dictfile, mode='rb') as f:
             old_dict = pickle.load(f)
         oldkeys = [(i[1], i[0]) for i in old_dict.keys()]
         cplist = [(os.path.join(root, f), f) for root, f in flist]
         deletefile = [f for f in oldkeys if f not in cplist]
         for root, name in deletefile:
-            logger_con.info(streamcol("file: {} \nhas been deleted, moved or renamed"
-            .format(os.path.join(root, name)), 'red'))
+            streamcol("file: {} \nhas been deleted, moved or renamed".format(os.path.join(root, name)),
+                      'red', 'info')
             old_dict.pop((name, root))
         for root, f in flist:
             fdst = os.path.join(root, f)
@@ -123,19 +119,17 @@ class md5dict:
                 oldmd5 = old_dict.get((f, fdst))[0]
                 oldpath = old_dict.get((f, fdst))[1]
                 if oldmd5 != md5:
-                    logger_con.info(streamcol('file: {}\nhas been modified, updating md5dict'
-                    .format(fdst), 'yellow'))
+                    streamcol('file: {}\nhas been modified, updating md5dict'.format(fdst),
+                              'yellow', 'info')
                     old_dict[(f, oldpath)] = (md5, oldpath)
                     changedfile.append((root, f))
                 else:
                     logger_con.info('file: {}\nhas not changed, skiping'.format(fdst))
             else:
-                logger_con.info(streamcol('new file: {}\n updating md5dict'
-                .format(fdst), 'green'))
+                streamcol('new file: {}\n updating md5dict'.format(fdst), 'green', 'info')
                 old_dict[(f, fdst)] = (md5, fdst)
                 changedfile.append((root, f))
-        logger_con.info(streamcol('updating md5dict pickle file at {}'
-        .format(self.dictfile), 'blue'))
+        streamcol('updating md5dict pickle file at {}'.format(self.dictfile), 'blue', 'info')
         with open(self.dictfile, mode = 'wb+') as f:
             pickle.dump(old_dict, f)
         return changedfile, deletefile
@@ -144,14 +138,14 @@ def fullBackup(src, dst, filename=None):
     """
     Fully backup all files in a zip file
     """
-    logger_con.info(streamcol('preparing md5 dictionary...', 'blue'))
+    streamcol('preparing md5 dictionary...', 'blue', 'info')
     m = md5dict(src)
     filedict = m.storemd5dict()
     if not filename:
         filename = time.strftime('%Y-%m-%d', time.localtime())+'fullbackup.zip'
     zippath = os.path.join(dst, filename)
     myzip = zipfile.ZipFile(zippath, 'w', zipfile.ZIP_DEFLATED)
-    logger_con.info(streamcol('writing zip file in :\n{}'.format(zippath), 'blue'))
+    streamcol('writing zip file in :\n{}'.format(zippath), 'blue', 'info')
     for f, fdst in filedict.keys():
         myzip.write(fdst, fdst.replace(src+os.sep, ''))
     myzip.close()
@@ -163,29 +157,27 @@ def incrBackup(src,dst, filename=None):
     the deleted file cannot be recovered, only write in backup log
     """
     m = md5dict(src)
-    logger_con.info(streamcol('updating md5 dictionary...', 'blue'))
+    streamcol('updating md5 dictionary...', 'blue', 'info')
     chgfile, delfile = m.updatemd5dict()
     if len(chgfile) == 0:
-        logger_con.info(streamcol('Nothing has been added, moved or modified in path:\n{}'
-        .format(src), 'blue'))
+        streamcol('Nothing has been added, moved or modified in path:\n{}'.format(src),
+                  'blue', 'info')
     else:
         if not filename:
             filename = time.strftime('%Y-%m-%d', time.localtime()) + 'incrbackup.zip'
         zippath = os.path.join(dst, filename)
         myzip = zipfile.ZipFile(zippath, 'w', zipfile.ZIP_DEFLATED)
-        logger_con.info(streamcol('writing zip file in :\n{}'
-        .format(zippath), 'blue'))
+        streamcol('writing zip file in :\n{}'.format(zippath), 'blue', 'info')
         for root, f in chgfile:
             fdst = os.path.join(root, f)
             myzip.write(fdst, fdst.replace(src+os.sep, ''))
         myzip.close()
     if len(delfile) == 0:
-        logger_con.info(streamcol('No file has been deleted in:\n{}'
-        .format(src), 'blue'))
+        streamcol('No file has been deleted in:\n{}'.format(src), 'blue', 'info')
     else:
         for fdst, fname in delfile:
-            logger_con.info(streamcol('''file:{} has been deleted, moved or renamed\n
-            path:{}'''.format(fname, fdst), 'blue'))
+            streamcol('''file:{} has been deleted, moved or renamed\npath:{}'''.format(fname, fdst),
+                      'blue','info')
     return chgfile, delfile
 
 def backupTask(srclist, dst, filenamelist=None, fullbackup=True):
@@ -193,7 +185,7 @@ def backupTask(srclist, dst, filenamelist=None, fullbackup=True):
     backup multiply path in a specific path
     """
     # FIXME:need to change the md5file's name to fit multiply path's requirement
-    logger_con.info(streamcol('starting backup task...', 'blue'))
+    streamcol('starting backup task...', 'blue', 'info')
     for index, src in enumerate(srclist):
         if fullbackup:
             if filenamelist:
@@ -201,10 +193,9 @@ def backupTask(srclist, dst, filenamelist=None, fullbackup=True):
             else:
                 backupFile = os.path.basename(src)
                 backupFile = time.strftime('%Y-%m-%d', time.localtime()) + backupFile + 'full.zip'
-            logger_con.info(streamcol('starting fullbackup for source path:{}'
-            .format(src), 'blue'))
+            streamcol('starting fullbackup for source path:{}'.format(src), 'blue', 'info')
             filelist = fullBackup(src, dst, backupFile)
-            logger_con.info(streamcol('writing log file in path:{}'.format(os.path.abspath('..')), 'blue'))
+            streamcol('writing log file in path:{}'.format(os.path.abspath('..')), 'blue', 'info')
             WriteLogFile(logname=os.path.basename(src), filelist=filelist, fullbackup=True)
         else:
             if filenamelist:
@@ -212,10 +203,9 @@ def backupTask(srclist, dst, filenamelist=None, fullbackup=True):
             else:
                 backupFile = os.path.basename(src)
                 backupFile = time.strftime('%Y-%m-%d', time.localtime()) + backupFile + 'incr.zip'
-            logger_con.info(streamcol('starting incrbackup for source path:{}'
-            .format(src), 'blue'))
+            streamcol('starting incrbackup for source path:{}'.format(src), 'blue', 'info')
             chgfile, delfile = incrBackup(src, dst, backupFile)
-            logger_con.info(streamcol('writing log file in path:{}'.format(os.path.abspath('..')), 'blue'))
+            streamcol('writing log file in path:{}'.format(os.path.abspath('..')), 'blue', 'info')
             WriteLogFile(logname=os.path.basename(src), chgfile=chgfile, delfile=delfile, fullbackup=False)
 
 
