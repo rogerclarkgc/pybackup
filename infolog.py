@@ -38,7 +38,12 @@ logger_file.addHandler(logFilehandle)
 
 def streamcol_unix(s, col, infotype):
     """
-    change character's color when print on the screen
+    change color of characters on console, only use in ANSI standard
+    console
+    :param s: string on screen
+    :param col: color of screen, can use 'red', 'green', 'yellow', 'blue'
+    :param infotype: type of info , can use 'info', 'warn', 'error'
+    :return: None
     """
     red = "\033[1;31;40m"
     green = "\033[1;32;40m"
@@ -57,6 +62,13 @@ def streamcol_unix(s, col, infotype):
     eval(text_console)
 
 def streamcol_win(s, col, infotype):
+    """
+    change the color of characters on win-like console
+    :param s: string on screen
+    :param col: color of characters, 'black', 'white', 'green', 'red', 'yellow', 'blue'
+    :param infotype: type of info, can use 'info', 'warn', 'error'
+    :return: None
+    """
     std_output_handle = -11
     black = 0x00
     white = 0x0f
@@ -80,6 +92,13 @@ def streamcol_win(s, col, infotype):
     ctypes.windll.kernel32.SetConsoleTextAttribute(screenHandle, 0x07)
 
 def streamcol(s, col, infotype):
+    """
+    wrapper of streamcol
+    :param s: string on sreen
+    :param col: color of characters
+    :param infotype: type of info for logger.con object
+    :return: None
+    """
     if platform.system() == "Windows":
         streamcol_win(s, col, infotype)
     else:
@@ -87,6 +106,15 @@ def streamcol(s, col, infotype):
 
 
 def WriteLogFile(logname=None, filelist=None, chgfile=None, delfile=None, fullbackup=True):
+    """
+    Write a log file in disk
+    :param logname: the name of log file, if None, the name will look like time + _FULL.log/_INCR.LOG
+    :param filelist: the new file list of backup
+    :param chgfile: the files which have changed
+    :param delfile: the files which have deleted
+    :param fullbackup: fullbackup or incrbackup
+    :return: None
+    """
     if fullbackup:
         # type == 0, using fullBackup() method
         if not logname:
@@ -96,7 +124,7 @@ def WriteLogFile(logname=None, filelist=None, chgfile=None, delfile=None, fullba
         logpath = os.path.join(os.path.abspath('..'), logname)
         streamcol('writing log file in path:{}'.format(logpath), 'blue', 'info')
         logContent = ["file:{}    path:{}\n".format(key[0], key[1]) for key in filelist.keys()]
-        endtext = "These files above were new files\n".format(time.strftime('%Y-%m-%d-%H%M%S', time.localtime()))
+        endtext = "These were {} files above were new files\n".format(len(logContent))
         logContent.append(endtext)
         with open(logpath, 'a', encoding='utf-8') as f:
             f.writelines(logContent)
@@ -109,9 +137,9 @@ def WriteLogFile(logname=None, filelist=None, chgfile=None, delfile=None, fullba
         streamcol('writing log file in path:{}'.format(logpath), 'blue', 'info')
         chgContent = ["file:{}    path:{}\n".format(p[1], os.path.join(p[0], p[1]))
         for p in chgfile]
-        chgContent.append('These files above have been modified or added\n\n\n')
+        chgContent.append('There are {} files above have been modified or added\n\n\n'.format(len(chgContent)))
         delContent = ["file:{}    path:{}\n".format(p[1], p[0]) for p in delfile]
-        delContent.append('These files above have been deleted, moved or renamed\n')
+        delContent.append('There are {} files above have been deleted, moved or renamed\n'.format(len(delContent)))
         with open(logpath, 'a', encoding='utf-8') as f:
             f.writelines(chgContent+delContent)
 

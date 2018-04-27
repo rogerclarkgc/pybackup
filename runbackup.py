@@ -17,7 +17,7 @@ def main(argv):
     -d, --destination: store the zip files in this folder
     -h, --help: check help message
     :param argv:
-    :return:
+    :return:None
     """
     shortparam = 'hs:d:fi'
     longparam = ['help', 'source', 'destination', 'full', 'incr']

@@ -13,7 +13,9 @@ from infolog import logger_con, WriteLogFile, streamcol
 
 def mkdir(path):
     """
-    make a folder at specific path
+    make a new folder at path
+    :param path: path of new folder
+    :return: bool value
     """
     pathexists = os.path.exists(path)
     if pathexists:
@@ -25,7 +27,9 @@ def mkdir(path):
 
 def md5hash(filename):
     """
-    calculate md5 value of a file
+    calculate a file 's md5 hash
+    :param filename: file's name
+    :return: md5 hash value, str object
     """
     m = hashlib.md5()
     with open(filename, mode='rb') as f:
@@ -40,9 +44,14 @@ def md5hash(filename):
 
 class md5dict:
     """
-    generate a dict to store every file's name and md5 value
+    a class to operate md5 hash for file
     """
     def __init__(self, path, dictname = None):
+        """
+        initiating the class
+        :param path: the path of folder
+        :param dictname: the name of md5file dict pickle file
+        """
         self.path = path
         pathexists = os.path.exists(path)
         if pathexists is False:
@@ -56,7 +65,8 @@ class md5dict:
 
     def loadmd5dict(self):
         """
-        load stored md5dict pickle file, return a python dict object
+        load a md5dict pickle file
+        :return: a dict object
         """
         try:
             with open(self.dictfile, 'rb') as f:
@@ -69,9 +79,8 @@ class md5dict:
 
     def storemd5dict(self):
         """
-        store md5 value in a dict object
-        key of dict is a pair (file, filepath)
-        return value is the dict used to store md5 value of files
+        store md5dict pickle file
+        :return: the file 's md5 dict object
         """
         streamcol('checking path {}...'.format(self.path), 'blue', 'info')
         #flist = os.listdir(self.path)
@@ -93,9 +102,8 @@ class md5dict:
 
     def updatemd5dict(self):
         """
-        update md5 dict for changing of files
-        return value are two list objects, which contain changed files and Deleted
-        files
+        updating md5dict
+        :return: two list object, the names of changed files and deleted files
         """
         flist = []
         for root, dirs, files in os.walk(self.path):
@@ -136,7 +144,11 @@ class md5dict:
 
 def fullBackup(src, dst, filename=None):
     """
-    Fully backup all files in a zip file
+    fully backup whole files under the src's directory
+    :param src: the source folder you want to backup
+    :param dst: the folder to store the backup zip files
+    :param filename: the filename for zip files
+    :return: the file dict of new files
     """
     streamcol('preparing md5 dictionary...', 'blue', 'info')
     m = md5dict(src)
@@ -153,8 +165,11 @@ def fullBackup(src, dst, filename=None):
 
 def incrBackup(src,dst, filename=None):
     """
-    only backup changed files, including modified, changed path and added
-    the deleted file cannot be recovered, only write in backup log
+    only backup changed files, deleted file cannot backup, only write in log
+    :param src: the source folder you want to backup
+    :param dst: the folder to store the backup zip files
+    :param filename: the filename for zip files
+    :return: the list object of changed and deleted files
     """
     m = md5dict(src)
     streamcol('updating md5 dictionary...', 'blue', 'info')
@@ -182,9 +197,13 @@ def incrBackup(src,dst, filename=None):
 
 def backupTask(srclist, dst, filenamelist=None, fullbackup=True):
     """
-    backup multiply path in a specific path
+    wrapper for function fullBackup and incrBackup
+    :param srclist:the source you want to backup, for multiple source, write in a list
+    :param dst:the folder to store the backup zip files
+    :param filenamelist:the backup file 's name, list object
+    :param fullbackup:fullBackup or incrBackup
+    :return:None
     """
-    # FIXME:need to change the md5file's name to fit multiply path's requirement
     streamcol('starting backup task...', 'blue', 'info')
     for index, src in enumerate(srclist):
         if fullbackup:
