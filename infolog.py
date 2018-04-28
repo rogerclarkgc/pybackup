@@ -140,7 +140,7 @@ def WriteLogFile(logname=None, filelist=None, chgfile=None, delfile=None, fullba
         chgContent.append('There are {} files above have been modified or added\n\n\n'.format(len(chgContent)))
         delContent = ["file:{}    path:{}\n".format(p[1], p[0]) for p in delfile]
         delContent.append('There are {} files above have been deleted, moved or renamed\n'.format(len(delContent)))
-        with open(logpath, 'a', encoding='utf-8') as f:
+        with open(logpath, 'a') as f:
             f.writelines(chgContent+delContent)
 
 
