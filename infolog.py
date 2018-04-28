@@ -126,7 +126,7 @@ def WriteLogFile(logname=None, filelist=None, chgfile=None, delfile=None, fullba
         logContent = ["file:{}    path:{}\n".format(key[0], key[1]) for key in filelist.keys()]
         endtext = "These were {} files above were new files\n".format(len(logContent))
         logContent.append(endtext)
-        with open(logpath, 'a', encoding='utf-8') as f:
+        with open(logpath, 'a') as f:
             f.writelines(logContent)
     else:
         if not logname:
