@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import (QMainWindow, QTextEdit, QAction,
-QFileDialog, QApplication, QMessageBox, qApp)
+QFileDialog, QApplication, QMessageBox, QLineEdit, qApp)
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
-import sys
+import sys, os
 
 class MainWindow(QMainWindow):
 
@@ -14,15 +14,20 @@ class MainWindow(QMainWindow):
     def initUI(self):
 
         self.statusBar()
+        self.lineSourceFolder = QLineEdit()
+        self.setCentralWidget(self.lineSourceFolder)
+        #self.lineSourceFolder.move(250, 100)
 
         chooseFolder = QAction('Choose folder', self)
         chooseFolder.setShortcut('Ctrl+O')
         chooseFolder.setStatusTip('Choose the folder you want to backup')
+        chooseFolder.triggered.connect(self.selectSourceFolder)
 
         chooseDestination = QAction('Choose backup destination', self)
         chooseDestination.setShortcut('Ctrl+T')
         chooseDestination.setStatusTip('''Choose the folder you want to store the
         backup zip files''')
+        chooseDestination.triggered.connect(self.selectDestinationFolder)
 
         exitAct = QAction('Exit', self)
         exitAct.setShortcut('Ctrl+Q')
@@ -47,7 +52,8 @@ class MainWindow(QMainWindow):
         helpMenu.addAction(helpInfo)
         helpMenu.addAction(aboutAuthor)
 
-        self.setGeometry(300, 300, 350, 300)
+
+        self.setGeometry(300, 300, 500, 300)
         self.setWindowTitle('pybackup-GUI')
         self.show()
 
@@ -61,6 +67,21 @@ class MainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def selectSourceFolder(self):
+
+        path = QFileDialog.getExistingDirectory(self, "Choose source folder",
+        os.getcwd())
+        self.lineSourceFolder.setText(path)
+        print(path)
+        return path
+
+    def selectDestinationFolder(self):
+
+        dir = QFileDialog.getExistingDirectory(self, "Choose destination folder",
+        os.getcwd())
+        print(dir)
+        return dir
 
     def showHelp(self):
         pass
