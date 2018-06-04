@@ -226,5 +226,6 @@ def backupTask(srclist, dst, filenamelist=None, fullbackup=True):
             chgfile, delfile = incrBackup(src, dst, backupFile)
             streamcol('writing log file in path:{}'.format(os.path.abspath('..')), 'blue', 'info')
             WriteLogFile(logname=os.path.basename(src), chgfile=chgfile, delfile=delfile, fullbackup=False)
+    streamcol('All backup process is finished!', 'blue', 'info')
 
 

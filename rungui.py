@@ -143,13 +143,62 @@ class MainWindow(QMainWindow):
         print(dir)
         return dir
 
+    def click(self):
+        sourceFolder = self.central.sourceLine.text()
+        destiFolder = self.central.destLine.text()
+        viewLogState = self.central.setViewLog.checkState()
+        fullBackupState = self.central.setFullBackup.checkState()
+        if sourceFolder or destiFolder is "":
+            QMessageBox.warning(self, "Lost param", "source folder or destination folder can not be None")
+        else:
+            print(sourceFolder, destiFolder, viewLogState, fullBackupState)
+
     def clickStartButton(self):
 
         sourceFolder = self.central.sourceLine.displayText()
         destiFolder = self.central.destLine.displayText()
         viewLogState = self.central.setViewLog.checkState()
         fullBackupState = self.central.setFullBackup.checkState()
-        print(sourceFolder, destiFolder, viewLogState, fullBackupState)
+
+        scriptPath = os.path.join(os.getcwd(), 'runbackup.py')
+        checkPathExit = os.path.exists(scriptPath)
+
+        """
+        FIXME: checkPathExit is False when rungui.py is not ran in the scripts' directory
+        
+        EXAMPLE:
+            D:\>python3 D:\\git-R\\pybackup\\rungui.py
+            
+            (input params correctly in the gui window)
+            
+            bounce window:Can not find script:runbackup.py
+            
+            (When run the rungui.py in its' working directory, the script is running correctly)
+            
+            D:\git-R\pybackup>python3 rungui.py
+            
+            (input params correctly in the gui window)
+            
+            the scripts is running successful
+        """
+        if not checkPathExit:
+            #raise RuntimeError('No core script:runbackup.py, check your working directory!')
+            print(scriptPath)
+            QMessageBox.critical(self, "ERROR", "Can not find script:runbackup.py")
+        # FIXME: warning message always bounce out whether souceFolder and destiFolder is None or not None
+        #elif sourceFolder or destiFolder is "":
+            #print(sourceFolder, destiFolder, viewLogState, fullBackupState)
+            #QMessageBox.warning(self, "Lost params", "Source folder or destination folder can not be None!")
+        else:
+            cmd = "python " + scriptPath
+            src = " -s " + sourceFolder
+            dst = " -d " + destiFolder
+            if fullBackupState:
+                cmd = cmd + src + dst + " -f"
+            else:
+                cmd = cmd + src + dst
+            os.system(cmd)
+
 
     def showHelp(self):
         pass
