@@ -23,6 +23,7 @@ class centralWidget(QWidget):
 
         self.sourceLine = QLineEdit()
         self.destLine = QLineEdit()
+        #self.sourceLine.setEchoMode(2)
 
         self.sourceButton = QPushButton('select')
         self.sourceButton.resize(self.sourceButton.sizeHint())
@@ -81,6 +82,10 @@ class MainWindow(QMainWindow):
         exitAct.setStatusTip('Exit pybackup-GUI')
         exitAct.triggered.connect(qApp.quit)
 
+        viewLog = QAction('View backup log', self)
+        viewLog.setShortcut('Ctrl+L')
+        viewLog.setStatusTip('View the log file of back up')
+
         helpInfo = QAction('Help', self)
         helpInfo.setShortcut('Ctrl+H')
         helpInfo.setStatusTip('Help documents')
@@ -91,17 +96,20 @@ class MainWindow(QMainWindow):
 
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu('&File')
+        viewMenu = menuBar.addMenu('&View')
         helpMenu = menuBar.addMenu('&Help')
 
         fileMenu.addAction(chooseFolder)
         fileMenu.addAction(chooseDestination)
         fileMenu.addAction(exitAct)
+        viewMenu.addAction(viewLog)
         helpMenu.addAction(helpInfo)
         helpMenu.addAction(aboutAuthor)
 
         self.central = centralWidget()
         self.central.sourceButton.clicked.connect(self.selectSourceFolder)
         self.central.destiButton.clicked.connect(self.selectDestinationFolder)
+        self.central.startButton.clicked.connect(self.clickStartButton)
         self.statusBar()
         self.setCentralWidget(self.central)
         self.setGeometry(300, 300, 500, 300)
@@ -134,6 +142,14 @@ class MainWindow(QMainWindow):
         self.central.destLine.setText(dir)
         print(dir)
         return dir
+
+    def clickStartButton(self):
+
+        sourceFolder = self.central.sourceLine.displayText()
+        destiFolder = self.central.destLine.displayText()
+        viewLogState = self.central.setViewLog.checkState()
+        fullBackupState = self.central.setFullBackup.checkState()
+        print(sourceFolder, destiFolder, viewLogState, fullBackupState)
 
     def showHelp(self):
         pass
