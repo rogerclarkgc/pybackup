@@ -1,8 +1,61 @@
-from PyQt5.QtWidgets import (QMainWindow, QTextEdit, QAction,
-QFileDialog, QApplication, QMessageBox, QLineEdit, qApp)
+from PyQt5.QtWidgets import (QMainWindow, QCheckBox, QAction, QWidget, QLabel,
+QFileDialog, QApplication, QMessageBox, QLineEdit, qApp, QGridLayout, QPushButton)
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
 import sys, os
+
+
+class centralWidget(QWidget):
+
+    def __init__(self):
+
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+
+        grid = QGridLayout()
+        grid.setSpacing(10)
+
+        sourceLabel = QLabel("Source Folder:")
+        destiLabel = QLabel("Destination Folder:")
+        paramLabel = QLabel("Backup params:")
+
+        self.sourceLine = QLineEdit()
+        self.destLine = QLineEdit()
+
+        self.sourceButton = QPushButton('select')
+        self.sourceButton.resize(self.sourceButton.sizeHint())
+        self.destiButton = QPushButton('select')
+        self.destiButton.resize(self.destiButton.sizeHint())
+        self.startButton = QPushButton('start backup')
+        self.startButton.resize(self.startButton.sizeHint())
+
+        self.setFullBackup = QCheckBox('full backup')
+        self.setViewLog = QCheckBox('View log after backup')
+        self.setFullBackup.setChecked(True)
+        self.setViewLog.setChecked(False)
+        self.setFullBackup.setToolTip("Select to run full backup process,\nif not select,script will run a incr-backup")
+        self.setViewLog.setToolTip("Select to see the backup log after backup process is finished")
+
+        grid.addWidget(sourceLabel, 1, 0)
+        grid.addWidget(self.sourceLine, 1, 1)
+        grid.addWidget(self.sourceButton, 1, 2)
+
+        grid.addWidget(destiLabel, 2, 0)
+        grid.addWidget(self.destLine, 2, 1)
+        grid.addWidget(self.destiButton, 2, 2)
+
+        grid.addWidget(paramLabel, 3, 0)
+        grid.addWidget(self.setFullBackup, 3, 1)
+        grid.addWidget(self.setViewLog, 3, 2)
+
+        grid.addWidget(self.startButton, 4, 2)
+
+        self.setLayout(grid)
+        #self.setGeometry(300, 300, 500, 200)
+        self.show()
+
 
 class MainWindow(QMainWindow):
 
@@ -13,20 +66,14 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
 
-        self.statusBar()
-        self.lineSourceFolder = QLineEdit()
-        self.setCentralWidget(self.lineSourceFolder)
-        #self.lineSourceFolder.move(250, 100)
-
         chooseFolder = QAction('Choose folder', self)
         chooseFolder.setShortcut('Ctrl+O')
-        chooseFolder.setStatusTip('Choose the folder you want to backup')
+        chooseFolder.setStatusTip('Choose the folder which you want to backup')
         chooseFolder.triggered.connect(self.selectSourceFolder)
 
         chooseDestination = QAction('Choose backup destination', self)
         chooseDestination.setShortcut('Ctrl+T')
-        chooseDestination.setStatusTip('''Choose the folder you want to store the
-        backup zip files''')
+        chooseDestination.setStatusTip('''Choose the folder which you want to store the backup zip files''')
         chooseDestination.triggered.connect(self.selectDestinationFolder)
 
         exitAct = QAction('Exit', self)
@@ -52,7 +99,11 @@ class MainWindow(QMainWindow):
         helpMenu.addAction(helpInfo)
         helpMenu.addAction(aboutAuthor)
 
-
+        self.central = centralWidget()
+        self.central.sourceButton.clicked.connect(self.selectSourceFolder)
+        self.central.destiButton.clicked.connect(self.selectDestinationFolder)
+        self.statusBar()
+        self.setCentralWidget(self.central)
         self.setGeometry(300, 300, 500, 300)
         self.setWindowTitle('pybackup-GUI')
         self.show()
@@ -72,7 +123,7 @@ class MainWindow(QMainWindow):
 
         path = QFileDialog.getExistingDirectory(self, "Choose source folder",
         os.getcwd())
-        self.lineSourceFolder.setText(path)
+        self.central.sourceLine.setText(path)
         print(path)
         return path
 
@@ -80,6 +131,7 @@ class MainWindow(QMainWindow):
 
         dir = QFileDialog.getExistingDirectory(self, "Choose destination folder",
         os.getcwd())
+        self.central.destLine.setText(dir)
         print(dir)
         return dir
 
