@@ -181,23 +181,23 @@ class MainWindow(QMainWindow):
             
             the scripts is running successful
         """
-        if not checkPathExit:
-            #raise RuntimeError('No core script:runbackup.py, check your working directory!')
-            print(scriptPath)
-            QMessageBox.critical(self, "ERROR", "Can not find script:runbackup.py")
-        # FIXME: warning message always bounce out whether souceFolder and destiFolder is None or not None
-        #elif sourceFolder or destiFolder is "":
-            #print(sourceFolder, destiFolder, viewLogState, fullBackupState)
-            #QMessageBox.warning(self, "Lost params", "Source folder or destination folder can not be None!")
+
+        if (sourceFolder and destiFolder) is "":
+            QMessageBox.warning(self, "Lost params", "Source folder of destination folder can not be none!")
         else:
-            cmd = "python " + scriptPath
-            src = " -s " + sourceFolder
-            dst = " -d " + destiFolder
-            if fullBackupState:
-                cmd = cmd + src + dst + " -f"
+            if not checkPathExit:
+            #raise RuntimeError('No core script:runbackup.py, check your working directory!')
+                print(scriptPath)
+                QMessageBox.critical(self, "ERROR", "Can not find script:runbackup.py at {}".format(scriptPath))
             else:
-                cmd = cmd + src + dst
-            os.system(cmd)
+                cmd = "python " + scriptPath
+                src = " -s " + sourceFolder
+                dst = " -d " + destiFolder
+                if fullBackupState:
+                    cmd = cmd + src + dst + " -f"
+                else:
+                    cmd = cmd + src + dst
+                os.system(cmd)
 
 
     def showHelp(self):
